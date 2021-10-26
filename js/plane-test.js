@@ -1,10 +1,12 @@
 import * as THREE from './lib/three.js-master/build/three.module.js';
 import { TrackballControls } from './lib/three.js-master/examples/jsm/controls/TrackballControls.js';
 
-let camera, scene, renderer;
+let camera, scene, renderer, view_dist;
 let group, controls;
 let vertices, centroid, betas, resid_segments, resid_geom;
 let model_plane, model_plane_geom, model_plane_mesh, model_plane_border;
+
+
 
 // Load data from CSV
     Papa.parse("resources/mlr_3vars.csv", {
@@ -29,21 +31,26 @@ let model_plane, model_plane_geom, model_plane_mesh, model_plane_border;
         centroid.multiplyScalar(3/results.data.length);
 
         init();
-        animate();
+        requestAnimationFrame(animate);
+        
+//         animate();
         
      } } );
 
 function init() {
 
-    //alert('Start');
+    window.addEventListener( 'resize', onWindowResize, false );
+
     var width = window.innerWidth;
     var height = window.innerHeight;
+    
+    view_dist = 2.5;
     
     // camera = new THREE.OrthographicCamera( width / - 1000, width / 1000, 
 //                                            height / 1000, height / - 1000, 
 //                                            -1, 10);
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
-	camera.position.set(0, 0, 5);
+	camera.position.set(0, 0, view_dist);
 	camera.lookAt(0, 0, 0);
     camera.up.set(0, 1, 0);
 
@@ -52,9 +59,9 @@ function init() {
 	scene.background = new THREE.Color( 0xffffff );
 
     // Planes
-    const plane_xy = new THREE.GridHelper( 3, 2, 0xa30000, 0xa30000); // red
-	const plane_xz = new THREE.GridHelper( 3, 2, 0x090f82, 0x090f82); // blue
-	const plane_yz = new THREE.GridHelper( 3, 2, 0x0e6e05, 0x0e6e05); // green
+    const plane_xy = new THREE.GridHelper( 2, 2, 0xa30000, 0xa30000); // red
+	const plane_xz = new THREE.GridHelper( 2, 2, 0x090f82, 0x090f82); // blue
+	const plane_yz = new THREE.GridHelper( 2, 2, 0x0e6e05, 0x0e6e05); // green
 
 	plane_xz.rotateX(Math.PI / 2);
 	plane_yz.rotateZ(Math.PI / 2);
@@ -104,10 +111,15 @@ function init() {
 
     scene.add( resid_segments );            
     
+    var parent = $("#renderer");
+    width = parent.innerWidth();
+    
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-// 	renderer.setAnimationLoop( animation );
-	document.body.appendChild( renderer.domElement );
+// 	renderer.setSize(width, 0.7*width);
+	
+	parent.append(renderer.domElement);
+	
+// 	document.body.appendChild( renderer.domElement );
 	
 	renderer.render( scene, camera );
 	
@@ -116,6 +128,36 @@ function init() {
 	setupKeyLogger();
 	
 
+}
+
+function updateModelPlane( update_mesh ) {
+
+    model_plane = get_model_plane ();
+    
+    if (typeof model_plane_geom !== 'undefined'){
+        model_plane_geom.dispose();
+        }
+        
+    model_plane_geom = get_plane_geom( model_plane, 2.2, 2.2 );
+    
+    if (typeof model_plane_mesh !== 'undefined'){
+        model_plane_mesh.geometry = model_plane_geom;
+        model_plane_border.geometry = new THREE.EdgesGeometry( model_plane_geom );
+        
+        var lines = get_residuals( vertices );
+        resid_geom.dispose();
+        resid_geom = new THREE.BufferGeometry().setFromPoints( lines );
+        
+        resid_segments.geometry = resid_geom;
+    } else {
+        var material = new THREE.MeshBasicMaterial( {color: 0xfff945, side: THREE.DoubleSide,
+                                                     transparent: true, opacity: 0.7,
+                                                     depthWrite: false} );
+                                              
+        model_plane_mesh = new THREE.Mesh( model_plane_geom, material );
+        model_plane_border = new THREE.LineSegments( new THREE.EdgesGeometry( model_plane_geom ), 
+                                                     new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+        }
 }
 
 function get_model_plane ( ) {
@@ -184,91 +226,93 @@ function get_residuals( vertices ) {
 
 }
 
+function onWindowResize() {
+
+    // var width = $("#renderer").innerWidth();
+// 	renderer.setSize(width, 0.7*width, false);
+
+}
+
+function resizeCanvasToDisplaySize() {
+
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  
+  if (canvas.width !== width ||canvas.height !== height) {
+    // you must pass false here or three.js sadly fights the browser
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    
+//     console.log(width, height);
+
+    // set render target sizes here
+  }
+}
+
 function setupKeyLogger() {
 
     document.onkeydown = function(e) {
         
-        switch (e.key) {
-        
-            case 't':
-            case 'T':
-                camera.position.set(0, 0, 2);
-                camera.lookAt(0, 0, 0);
-                camera.up.set(0, 1, 0);
-                return;
-                
-            case 'x':
-            case 'X':
-                camera.position.set(2, 0, 0);
-                camera.lookAt(0, 0, 0);
-                camera.up.set(0, 0, 1);
-                return;
-                
-            case 'y':
-            case 'Y':
-                camera.position.set(0, 2, 0);
-                camera.lookAt(0, 0, 0);
-                camera.up.set(0, 0, 1);
-                return;
-                
-            case 'ArrowUp':
-                betas[1] += .1;
-                updateModelPlane();
-                return;
-                
-            case 'ArrowDown':
-                betas[1] -= .1;
-                updateModelPlane();
-                return;
-                
-            case 'ArrowLeft':
-                betas[2] += .1;
-                updateModelPlane();
-                return;
-                
-            case 'ArrowRight':
-                betas[2] -= .1;
-                updateModelPlane();
-                return;
-                
-            default:
-                console.log(e);
-
-        }
-        
+        handle_event( e.key );
         
     }
 }
 
-function updateModelPlane( update_mesh ) {
+function handle_event( event ) {
 
-    model_plane = get_model_plane ();
-    
-    if (typeof model_plane_geom !== 'undefined'){
-        model_plane_geom.dispose();
-        }
+    switch ( event ) {
         
-    model_plane_geom = get_plane_geom( model_plane, 3, 3 );
-    
-    if (typeof model_plane_mesh !== 'undefined'){
-        model_plane_mesh.geometry = model_plane_geom;
-        model_plane_border.geometry = new THREE.EdgesGeometry( model_plane_geom );
-        
-        var lines = get_residuals( vertices );
-        resid_geom.dispose();
-        resid_geom = new THREE.BufferGeometry().setFromPoints( lines );
-        
-        resid_segments.geometry = resid_geom;
-    } else {
-        var material = new THREE.MeshBasicMaterial( {color: 0xfff945, side: THREE.DoubleSide,
-                                                     transparent: true, opacity: 0.7,
-                                                     depthWrite: false} );
-                                              
-        model_plane_mesh = new THREE.Mesh( model_plane_geom, material );
-        model_plane_border = new THREE.LineSegments( new THREE.EdgesGeometry( model_plane_geom ), 
-                                                     new THREE.LineBasicMaterial( { color: 0x000000 } ) );
-        }
+        case 't':
+        case 'T':
+            camera.position.set(0, 0, view_dist);
+            camera.lookAt(0, 0, 0);
+            camera.up.set(0, 1, 0);
+            return;
+            
+        case 'x':
+        case 'X':
+            camera.position.set(view_dist, 0, 0);
+            camera.lookAt(0, 0, 0);
+            camera.up.set(0, 0, 1);
+            return;
+            
+        case 'y':
+        case 'Y':
+            camera.position.set(0, view_dist, 0);
+            camera.lookAt(0, 0, 0);
+            camera.up.set(0, 0, 1);
+            return;
+            
+        case 'ArrowUp':
+            betas[1] += .1;
+            updateModelPlane();
+            return;
+            
+        case 'ArrowDown':
+            betas[1] -= .1;
+            updateModelPlane();
+            return;
+            
+        case 'ArrowLeft':
+            betas[2] += .1;
+            updateModelPlane();
+            return;
+            
+        case 'ArrowRight':
+            betas[2] -= .1;
+            updateModelPlane();
+            return;
+            
+        default:
+            console.log(e);
+
+    }
+
 }
+
+
 
 function createControls( camera ) {
 
@@ -290,7 +334,11 @@ function render() {
 
 }
 
-function animate() {
+function animate( time ) {
+
+    time *= 0.001; 
+
+    resizeCanvasToDisplaySize();
 
     requestAnimationFrame( animate );
 
@@ -310,3 +358,63 @@ function animation( time ) {
 	renderer.render( scene, camera );
 
 }
+
+$(function() {
+
+    // Set up sliders
+    $( "#slider_beta1" ).slider({
+      min: -2,
+      max: 2,
+      step: .1,
+      value: 0.0,
+      orientation: "horizontal",
+      range: false,
+      animate: true,
+      slide: function( event, ui ) {
+        
+        betas[1] = ui.value;
+        console.log(betas);
+        updateModelPlane();
+        }
+    });
+    
+     $( "#slider_beta2" ).slider({
+      min: -2,
+      max: 2,
+      step: .1,
+      value: 0.0,
+      orientation: "horizontal",
+      range: false,
+      animate: true,
+      slide: function( event, ui ) {
+        
+        betas[2] = ui.value;
+        console.log(betas);
+        updateModelPlane();
+        }
+    });
+    
+    $( "#button_view_X1" ).button();
+    $( "#button_view_X1" ).click( function( event ){
+            event.preventDefault();
+            handle_event('y');
+            }
+    );
+    
+    $( "#button_view_X2" ).button();
+    $( "#button_view_X2" ).click( function( event ){
+            event.preventDefault();
+            handle_event('x');
+            }
+    );
+    
+    $( "#button_view_top" ).button();
+    $( "#button_view_top" ).click( function( event ){
+            event.preventDefault();
+            handle_event('t');
+            }
+    );
+
+});
+		
+		

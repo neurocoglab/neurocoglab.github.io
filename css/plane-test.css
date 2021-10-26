@@ -1,0 +1,84 @@
+
+body {
+
+    font: 18px "Assistant", Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+    overflow: hidden;
+
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 3.5fr;
+    grid-gap: 20px;
+    /* border */: 1px solid green;
+    width: 95%;
+    height: 600px;
+    min-width: 700px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#controls {
+
+/*     border: 1px solid red; */
+    min-width: 150px;
+
+}
+
+#renderer {
+
+/*     border: 1px solid blue; */
+    height: 600px;
+
+}
+
+canvas { 
+
+    width: 100%; 
+    height: 100%; 
+    
+}
+
+.slider-container {
+
+    display: flex;
+    margin-bottom: 10px;
+
+}
+
+.slider-label {
+
+    flex: 1;
+    margin-right: 10px;
+/*     border: 1px solid black; */
+
+}
+
+.slider-obj {
+
+    margin-top: 4px;
+    flex: 4;
+/*     border: 1px solid black; */
+
+}
+
+#button_view_X1, #button_view_X2, #button_view_top{
+    font-size: 13px;
+}
+
+.button-obj {
+    flex: 1;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    width: 50px;
+    
+}
+
+.ui-button-text{
+    font-size: 6px !important;
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
