@@ -1,12 +1,11 @@
 import * as THREE from './lib/three.js-master/build/three.module.js';
 import { TrackballControls } from './lib/three.js-master/examples/jsm/controls/TrackballControls.js';
+import * as UTILS from './utils-3d.js';
 
 let camera, scene, renderer, view_dist;
 let group, controls;
 let vertices, centroid, betas, resid_segments, resid_geom;
 let model_plane, model_plane_geom, model_plane_mesh, model_plane_border;
-
-
 
 // Load data from CSV
     Papa.parse("resources/mlr_3vars.csv", {
@@ -44,7 +43,7 @@ function init() {
     var width = window.innerWidth;
     var height = window.innerHeight;
     
-    view_dist = 2.5;
+    view_dist = 3;
     
     // camera = new THREE.OrthographicCamera( width / - 1000, width / 1000, 
 //                                            height / 1000, height / - 1000, 
@@ -59,8 +58,8 @@ function init() {
 	scene.background = new THREE.Color( 0xffffff );
 
     // Planes
-    const plane_xy = new THREE.GridHelper( 2, 2, 0xa30000, 0xa30000); // red
-	const plane_xz = new THREE.GridHelper( 2, 2, 0x090f82, 0x090f82); // blue
+    const plane_xz = new THREE.GridHelper( 2, 2, 0xa30000, 0xa30000); // red
+	const plane_xy = new THREE.GridHelper( 2, 2, 0x090f82, 0x090f82); // blue
 	const plane_yz = new THREE.GridHelper( 2, 2, 0x0e6e05, 0x0e6e05); // green
 
 	plane_xz.rotateX(Math.PI / 2);
@@ -70,6 +69,20 @@ function init() {
 	group.add( plane_xy );
 	group.add( plane_xz );
 	group.add( plane_yz );
+	
+// 	const text_canvas = document.createElement( 'canvas' );
+	const label_font = '24px arial';
+// 	console.log(THREE.FontUtils.faces);
+	
+	group.add( UTILS.create_label_billboard( 'X1-X2', [1.1,1.1,0], 
+	                                         200, 50, 0.005, label_font,
+	                                         0xa30000) );
+	group.add( UTILS.create_label_billboard( 'X1-Y', [1.1,0,1.1], 
+	                                         200, 50, 0.005, label_font,
+	                                         0x090f82) );
+	group.add( UTILS.create_label_billboard( 'X2-Y', [0,1.1,1.1], 
+	                                         200, 50, 0.005, label_font,
+	                                         0x0e6e05) );                                         
 
     scene.add( group );
     
@@ -416,5 +429,8 @@ $(function() {
     );
 
 });
+
+
+
 		
 		
