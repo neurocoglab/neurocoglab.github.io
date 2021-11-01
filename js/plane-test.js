@@ -43,7 +43,7 @@ function init() {
     var width = window.innerWidth;
     var height = window.innerHeight;
     
-    view_dist = 3;
+    view_dist = 2;
     
     // camera = new THREE.OrthographicCamera( width / - 1000, width / 1000, 
 //                                            height / 1000, height / - 1000, 
@@ -151,7 +151,7 @@ function updateModelPlane( update_mesh ) {
         model_plane_geom.dispose();
         }
         
-    model_plane_geom = get_plane_geom( model_plane, 2.2, 2.2 );
+    model_plane_geom = get_plane_geom( model_plane, 2.1, 2.1 );
     
     if (typeof model_plane_mesh !== 'undefined'){
         model_plane_mesh.geometry = model_plane_geom;
