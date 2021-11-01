@@ -23,8 +23,6 @@ function make_label_canvas(text, width, height, font, color) {
     ctx.fillStyle = color;
     ctx.fillText(text, 0, 0);
     
-    console.log(color);
-
     return ctx.canvas;
 }
 
@@ -52,13 +50,9 @@ export function create_label_billboard( text, pos, width, height, scale, font, c
     label.position.y = pos[1];
     label.position.z = pos[2];
 
-    // if units are meters then 0.01 here makes size
-    // of the label into centimeters.
     label.scale.x = canvas.width * scale;
     label.scale.y = canvas.height * scale;
     
-    console.log(label);
-
     return label;
     
 }

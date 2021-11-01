@@ -38,7 +38,7 @@ let model_plane, model_plane_geom, model_plane_mesh, model_plane_border;
 
 function init() {
 
-    window.addEventListener( 'resize', onWindowResize, false );
+    //window.addEventListener( 'resize', onWindowResize, false );
 
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -90,7 +90,7 @@ function init() {
     betas = [centroid.z, 0, 0];
 
     // Model plane
-    updateModelPlane();
+    update_model_plane();
     
     // TODO: add clipping planes
     
@@ -140,10 +140,12 @@ function init() {
 	
 	setupKeyLogger();
 	
+	update_info_bar();
+	
 
 }
 
-function updateModelPlane( update_mesh ) {
+function update_model_plane( update_mesh ) {
 
     model_plane = get_model_plane ();
     
@@ -203,6 +205,9 @@ function get_plane_geom ( plane, width, height ) {
 
 }
 
+let mean_squared_error = 0;
+let r_squared = 0;
+
 function get_residuals( vertices ) {
 
     // Project each point to the model plane alone z-axis
@@ -217,6 +222,8 @@ function get_residuals( vertices ) {
     var pv_neg = new THREE.Vector3(0, 0, -10);
     var test = new THREE.Line3();
     var pt_int = new THREE.Vector3();
+    mean_squared_error = 0;
+    var mean_squared_model_error = 0;
     for ( let i = 0; i < vertices.length-3; i += 3 ) {
         pt1 = new THREE.Vector3(vertices[i], vertices[i+1], vertices[i+2]);
         pt2 = new THREE.Vector3(vertices[i], vertices[i+1], vertices[i+2]);
@@ -225,26 +232,28 @@ function get_residuals( vertices ) {
         pt_int = new THREE.Vector3();
         if (model_plane.intersectLine(test, pt_int) != null) {
             resids.push(pt1, pt_int);
+            mean_squared_error += pt1.distanceToSquared(pt_int);
+            mean_squared_model_error += pt1.z*pt1.z;
         }else {
             pt2.set(vertices[i], vertices[i+1], vertices[i+2]);
             pt2.add(pv_neg);
             test.set(pt1, pt2);
             if (model_plane.intersectLine(test, pt_int) != null) {
                 resids.push(pt1, pt_int);
+                mean_squared_error += pt1.distanceToSquared(pt_int);
+                mean_squared_model_error += pt1.z*pt1.z;
                 }
             }
         }
         
+    mean_squared_error /= resids.length;
+    mean_squared_model_error /= resids.length;
+    r_squared = 1 - (mean_squared_error / mean_squared_model_error);
+    
     return resids;
 
 }
 
-function onWindowResize() {
-
-    // var width = $("#renderer").innerWidth();
-// 	renderer.setSize(width, 0.7*width, false);
-
-}
 
 function resizeCanvasToDisplaySize() {
 
@@ -257,8 +266,6 @@ function resizeCanvasToDisplaySize() {
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    
-//     console.log(width, height);
 
     // set render target sizes here
   }
@@ -300,22 +307,26 @@ function handle_event( event ) {
             
         case 'ArrowUp':
             betas[1] += .1;
-            updateModelPlane();
+            update_model_plane();
+            update_info_bar();
             return;
             
         case 'ArrowDown':
             betas[1] -= .1;
-            updateModelPlane();
+            update_model_plane();
+            update_info_bar();
             return;
             
         case 'ArrowLeft':
             betas[2] += .1;
-            updateModelPlane();
+            update_model_plane();
+            update_info_bar();
             return;
             
         case 'ArrowRight':
             betas[2] -= .1;
-            updateModelPlane();
+            update_model_plane();
+            update_info_bar();
             return;
             
         default:
@@ -386,8 +397,8 @@ $(function() {
       slide: function( event, ui ) {
         
         betas[1] = ui.value;
-        console.log(betas);
-        updateModelPlane();
+        update_model_plane();
+        update_info_bar();
         }
     });
     
@@ -402,8 +413,8 @@ $(function() {
       slide: function( event, ui ) {
         
         betas[2] = ui.value;
-        console.log(betas);
-        updateModelPlane();
+        update_model_plane();
+        update_info_bar();
         }
     });
     
@@ -431,6 +442,24 @@ $(function() {
 });
 
 
+function update_info_bar() {
 
+    // Plane equation
+    var eqn = '<span class="eqn-var">y&#770;</span> = <span class="eqn-val">' + 
+              betas[1].toFixed(1) + '</span><span class="eqn-var">x<sub>1</sub></span> + ' + 
+              '<span class="eqn-val">' + betas[2].toFixed(1) + 
+              '</span><span class="eqn-var">x<sub>2</sub></span>';
+
+    $('#info-equation').html(eqn);
+    
+    // Mean squared error
+    $('#info-mse').html('MSE: <span class="eqn-val">' + mean_squared_error.toFixed(4) +
+                        '</span>');
+                        
+    // Mean squared error
+    $('#info-rsquared').html('R<sup>2</sup>: <span class="eqn-val">' + r_squared.toFixed(4) +
+                        '</span>');                    
+
+}
 		
 		

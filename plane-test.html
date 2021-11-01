@@ -18,11 +18,16 @@
   <link href="js/lib/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/plane-test.css">
   
+  <!--- Load fonts --->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400&display=swap" rel="stylesheet"> 
+  
   </head>
   
   <body>
   
-    <p>Use the arrow keys to change the betas<p>
+<!--     <p>Use the arrow keys to change the betas<p> -->
     <p>Drag the mouse to spin the view, scroll it to zoom in/out, click-drag to pan<p>
   
     <div class="grid-container">
@@ -43,7 +48,16 @@
             
         </div>
         
-        <div id="renderer"></div>
+        
+        <div class="renderer-container"> 
+            <div class="info-bar">
+                <div id="info-equation"></div>
+                <div id="info-mse"></div>
+                <div id="info-rsquared"></div>
+            </div>
+            <div id="renderer"> </div>
+        </div>
+        
     </div>
   
   
