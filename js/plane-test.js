@@ -482,7 +482,7 @@ function generate_image( cmap ) {
             autoScale: "none",
             min: beta_min,
             max: beta_max,
-            axisLabel: "β1",
+            axisLabel: "<tspan>β1</tspan>",
             showTickLabels: 'none', 
             showTicks: false,
             
@@ -518,10 +518,13 @@ function generate_image( cmap ) {
             $( "#slider_beta2" ).slider('value', pos.y);
             
 		    image_plot.lockCrosshair(pos);
-		    console.log(pos);
+		    //console.log(pos);
 		});
         
         update_image_crosshairs();
+        
+        // var placeholder = image_plot.getPlaceholder().find('#xaxisLabel');
+//         console.log(
         
         // Info box
         // placeholder.append("<div id='plot_params'><p id='plot_df'>df = " + df_eff + "</p>" + 
