@@ -1,14 +1,17 @@
 import * as THREE from './lib/three.js-master/build/three.module.js';
 import { TrackballControls } from './lib/three.js-master/examples/jsm/controls/TrackballControls.js';
 import * as UTILS from './utils-3d.js';
+import { CSS2DRenderer, CSS2DObject } from './lib/three.js-master/examples/jsm/renderers/CSS2DRenderer.js';
 
-let camera, scene, renderer, view_dist;
+
+let camera, scene, renderer, label_renderer, view_dist;
 let group, controls;
 let vertices, centroid, betas, resid_segments, resid_geom;
 let model_plane, model_plane_geom, model_plane_mesh, model_plane_border;
 let mean_squared_error = 0, r_squared = 0;
+let image_plot, image_url, cmap;
 
-// Load data from CSV
+    // Load data from CSV
     Papa.parse("resources/mlr_3vars.csv", {
 									header: true,
 									dynamicTyping: true,
@@ -30,6 +33,36 @@ let mean_squared_error = 0, r_squared = 0;
 
         init();
         requestAnimationFrame(animate);
+        
+        // Load gamma curves
+        Papa.parse("resources/brew_rdoryl_cmap.csv", {
+                                    header: false,
+                                    dynamicTyping: true,
+                                    download: true,
+                                    complete: function( results ) {
+            console.log("All done!");
+            console.log("Read ", results.data.length, " records.");
+
+            //console.log(results);
+        
+            // Add alpha channel
+            for (var i = 0; i < results.data.length; i++){
+                results.data[i].push(255);
+                }
+        
+            cmap = {};
+            cmap['map'] = results.data;
+            cmap['min'] = 0.02;
+            cmap['max'] = 0.2;
+            
+            //console.log(cmap);
+
+            generate_image( cmap );
+            
+        
+            }
+    
+         });
 
      } } );
 
@@ -61,11 +94,13 @@ function init() {
 	plane_yz.rotateZ(Math.PI / 2);
 	
 	var group = new THREE.Group();
+	
 	group.add( plane_xy );
 	group.add( plane_xz );
 	group.add( plane_yz );
 	
-	const label_font = '24px arial';
+// 	const label_font = '24px arial';
+	const label_font = '24px "M PLUS Rounded 1c"';
 	group.add( UTILS.create_label_billboard( 'X1-X2', [1.1,1.1,0], 
 	                                         200, 50, 0.005, label_font,
 	                                         0xa30000) );
@@ -319,6 +354,12 @@ $(function() {
         betas[1] = ui.value;
         update_model_plane();
         update_info_bar();
+        update_image_crosshairs();
+        },
+      change: function( event, ui ) {
+        betas[1] = ui.value;
+        update_model_plane();
+        update_info_bar();
         }
     });
     
@@ -331,7 +372,12 @@ $(function() {
       range: false,
       animate: true,
       slide: function( event, ui ) {
-        
+        betas[2] = ui.value;
+        update_model_plane();
+        update_info_bar();
+        update_image_crosshairs();
+        },
+      change: function( event, ui ) {
         betas[2] = ui.value;
         update_model_plane();
         update_info_bar();
@@ -381,5 +427,130 @@ function update_info_bar() {
                         '</span>');                    
 
 }
+
+function get_mses( beta_min, beta_max, N_pix ) {
+
+    var mses = UTILS.createArray(N_pix, N_pix);
+    var itr = (beta_max - beta_min) / N_pix;
+    
+    var betas_ij = [0, 0, 0];
+    for (var i = 0; i < N_pix; i++){
+        betas_ij[1] = beta_min + i * itr;
+        for (var j = 0; j < N_pix; j++){
+		    betas_ij[2] = beta_min + j * itr;
+		     
+		    // Compute MSE for these betas
+		    var plane_ij = UTILS.get_model_plane ( betas_ij );
+		    var resids_ij = UTILS.get_residuals( vertices, plane_ij );
+		    
+		    mses[i][j] = resids_ij[1];
+            }
+        }
+    
+    return mses;
+
+}
 		
-		
+function generate_image( cmap ) {
+
+    // Create image from data and betas
+    var N_pix = 100;
+    var beta_min = -1.5, beta_max = 1.5;
+    var mses = get_mses( beta_min, beta_max, N_pix );
+    
+    //console.log(mses);
+
+    image_url = UTILS.get_image_url( mses, cmap );
+   
+    var data = [[[image_url, beta_min, beta_min, beta_max, beta_max]]];
+
+    var options = {
+        series: {
+            images: {
+                show: true
+            }
+        },
+        crosshair: {
+            mode: "xy",
+            color: "cyan"
+			},
+        grid: {
+            hoverable: true,
+            clickable: true,
+            autoHighlight: false
+            },
+        xaxis: {
+            autoScale: "none",
+            min: beta_min,
+            max: beta_max,
+            axisLabel: "β1",
+            showTickLabels: 'none', 
+            showTicks: false,
+            
+           //  tickSize: 0,
+//             tickDecimals: 1,
+//             tickLength: 0
+        },
+        yaxis: {
+            autoScale: "none",
+            min: beta_min,
+            max: beta_max,
+            axisLabel: "β2",
+            showTickLabels: 'none', 
+            showTicks: false
+           //  tickSize: 0,
+//             tickDecimals: 1,
+//             tickLength: 0
+        }
+    };
+
+    $.plot.image.loadDataImages(data, options, function () {
+        var placeholder = $("#placeholder-img");
+
+        image_plot = $.plot(placeholder, data, options);
+        
+        placeholder.on("plotclick", function (event, pos, item) {
+        
+            // Get closest betas
+            pos.x = UTILS.round_to(pos.x, 0.05);
+            pos.y = UTILS.round_to(pos.y, 0.05);
+            
+            $( "#slider_beta1" ).slider('value', pos.x);
+            $( "#slider_beta2" ).slider('value', pos.y);
+            
+		    image_plot.lockCrosshair(pos);
+		    console.log(pos);
+		});
+        
+//         draw_current_mse();
+        
+        // Info box
+        // placeholder.append("<div id='plot_params'><p id='plot_df'>df = " + df_eff + "</p>" + 
+//                                                   "<p id='plot_alpha'>α = " + alpha.toFixed(3) + "</p></div>");
+    });
+    
+
+}
+
+function update_image_crosshairs() {
+
+    image_plot.lockCrosshair({x: betas[1], y: betas[2]});
+
+}
+
+function draw_current_mse() {
+
+    var scale = 0.1;
+    var ctx = image_plot.getCanvas().getContext("2d");
+//     ctx.strokeStyle = '#000000';
+
+    console.log(betas);
+    
+
+    ctx.moveTo(betas[1]-scale/2, betas[2]);
+    ctx.lineTo(betas[1]+scale/2, betas[2]);
+    ctx.moveTo(betas[1], betas[2]-scale/2);
+    ctx.lineTo(betas[1], betas[2]+scale/2);
+    
+
+}

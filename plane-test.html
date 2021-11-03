@@ -12,6 +12,21 @@
   <script language="javascript" type="text/javascript" src="js/lib/PapaParse-5.0.2/papaparse.js"></script>
   <script type="module" src="js/utils-3d.js"></script>
   <script type="module" src="js/plane-test.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.canvaswrapper.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.colorhelpers.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.saturated.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.browser.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.drawSeries.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.uiConstants.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.axislabels.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.resize.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.image.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.crosshair.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.hover.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.navigate.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.touchNavigate.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.touch.js"></script>
   
   <!--- Load stylesheets --->
   
@@ -46,6 +61,17 @@
                 <button class="button-obj" id="button_view_top">Top</button>
             </div>
             
+            <div id="plot_image">
+                <div id="placeholder-img" class="demo-container"">
+<!--                     <div class="img-placeholder"></div> -->
+                </div>
+                <!-- 
+<div id="placeholder-cbar" class="demo-container"">
+                    <div class="cbar-placeholder"></div>
+                </div>
+ -->
+    	    </div>
+            
         </div>
         
         
@@ -59,6 +85,8 @@
         </div>
         
     </div>
+    
+<!--     <div class="label label-plane" id="label-xy">X<sub>1</sub>-Y</div> -->
   
   
   </body>
