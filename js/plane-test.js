@@ -59,7 +59,6 @@ let image_plot, image_url, cmap;
 
             generate_image( cmap );
             
-        
             }
     
          });
@@ -522,7 +521,7 @@ function generate_image( cmap ) {
 		    console.log(pos);
 		});
         
-//         draw_current_mse();
+        update_image_crosshairs();
         
         // Info box
         // placeholder.append("<div id='plot_params'><p id='plot_df'>df = " + df_eff + "</p>" + 
