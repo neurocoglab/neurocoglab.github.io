@@ -52,7 +52,7 @@ let image_plot, image_url, cmap;
         
             cmap = {};
             cmap['map'] = results.data;
-            cmap['min'] = 0.02;
+            cmap['min'] = 0.01;
             cmap['max'] = 0.2;
             
             //console.log(cmap);
@@ -457,8 +457,6 @@ function generate_image( cmap ) {
     var beta_min = -1.5, beta_max = 1.5;
     var mses = get_mses( beta_min, beta_max, N_pix );
     
-    //console.log(mses);
-
     image_url = UTILS.get_image_url( mses, cmap );
    
     var data = [[[image_url, beta_min, beta_min, beta_max, beta_max]]];
@@ -485,10 +483,7 @@ function generate_image( cmap ) {
             axisLabel: "β1",
             showTickLabels: 'none', 
             showTicks: false,
-            
-           //  tickSize: 0,
-//             tickDecimals: 1,
-//             tickLength: 0
+
         },
         yaxis: {
             autoScale: "none",
@@ -497,9 +492,7 @@ function generate_image( cmap ) {
             axisLabel: "β2",
             showTickLabels: 'none', 
             showTicks: false
-           //  tickSize: 0,
-//             tickDecimals: 1,
-//             tickLength: 0
+
         }
     };
 
@@ -507,6 +500,8 @@ function generate_image( cmap ) {
         var placeholder = $("#placeholder-img");
 
         image_plot = $.plot(placeholder, data, options);
+        
+//         console.log(placeholder);
         
         placeholder.on("plotclick", function (event, pos, item) {
         
@@ -522,16 +517,44 @@ function generate_image( cmap ) {
 		});
         
         update_image_crosshairs();
-        
-        // var placeholder = image_plot.getPlaceholder().find('#xaxisLabel');
-//         console.log(
-        
-        // Info box
-        // placeholder.append("<div id='plot_params'><p id='plot_df'>df = " + df_eff + "</p>" + 
-//                                                   "<p id='plot_alpha'>α = " + alpha.toFixed(3) + "</p></div>");
     });
     
-
+    var cbar_url = UTILS.get_cbar_url( cmap, N_pix, 20 );
+//     console.log(cbar_url);
+    var cbar_data = [[[cbar_url, cmap['min'], 0, cmap['max'], 20]]];
+    var cbar_options = {
+        series: {
+            images: {
+                show: true
+            }
+        },
+        yaxis: {
+            autoScale: "none",
+            min: 0,
+            max: 20,
+            axisLabel: "MSE",
+            showTickLabels: 'none', 
+            showTicks: false
+        },
+        xaxis: {
+            font:{ size: 11 },
+            min: cmap['min'],
+            max: cmap['max'],
+            showTicks: false,
+            showTickLabels: 'endpoints',
+            tickFormatter: function( number ) { return number.toFixed(2).substring(1); }
+          
+        }
+    };
+    
+    $.plot.image.loadDataImages(cbar_data, cbar_options, function () {
+        var placeholder = $("#placeholder-cbar");
+        
+        var wtf = $.plot(placeholder, cbar_data, cbar_options);
+        
+        }
+    );
+    
 }
 
 function update_image_crosshairs() {

@@ -144,7 +144,7 @@ function interpolate_rgba(clr1, clr2, pos) {
 
 	var rgba = [];
 	for (var i = 0; i < 4; i++){
-		rgba.push(clr1[i] + (clr2[i]-clr1[i]) * pos);
+		rgba.push(Math.round(clr1[i] + (clr2[i]-clr1[i]) * pos));
 		}
 	return rgba;
 
@@ -190,6 +190,49 @@ export function get_image_url(data, cmap){
 
 	// Return a URL for this image
 	return canvas.toDataURL();
+
+}
+
+export function get_cbar_url( cmap, width, height ){
+
+    var buffer = new Uint8ClampedArray(width * height * 4);
+    
+    for (var x = 0; x < width; x++) {
+        var valx = cmap['min'] + (cmap['max'] - cmap['min']) * x / width;
+        //console.log(valx);
+        var rgba = getMappedColour(valx, cmap);
+        //console.log(rgba);
+        
+        for (var y = 0; y < height; y++) {
+            var pos = (y * width + x) * 4;
+            buffer[pos  ] = rgba[0];  // Red
+            buffer[pos+1] = rgba[1];  // Green
+            buffer[pos+2] = rgba[2];  // Blue
+            buffer[pos+3] = rgba[3];  // Alpha
+            }
+        }
+        
+    // create an offscreen canvas
+	var canvas = document.createElement("canvas");
+	var ctx = canvas.getContext("2d");
+
+	// size the canvas to dimensions
+	canvas.width = width;
+	canvas.height = height;
+
+	// get the imageData and pixel array from the canvas
+	var img_data = ctx.getImageData(0, 0, width, height);
+	img_data.data.set(buffer);
+
+
+	// put the modified pixels back on the canvas
+	ctx.putImageData(img_data,0,0);
+
+    //console.log(canvas);
+
+	// Return a URL for this image
+	return canvas.toDataURL();
+
 
 }
 
