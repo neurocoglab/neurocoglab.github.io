@@ -482,7 +482,7 @@ function generate_image( cmap ) {
             autoScale: "none",
             min: beta_min,
             max: beta_max,
-            axisLabel: "<tspan>β1</tspan>",
+            axisLabel: "β1",
             showTickLabels: 'none', 
             showTicks: false,
             
