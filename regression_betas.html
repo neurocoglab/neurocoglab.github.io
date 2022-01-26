@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Simple Linear Regression - Interactive Example</title>
+    <link href="css/regression_betas.css" rel="stylesheet" type="text/css">
+    <link href="js/lib/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet" type="text/css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;600;700&display=swap" rel="stylesheet"> 
+	   
+<!-- 	<script type="text/javascript" sync src="../MathJax/unpacked/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+	   
+    <script language="javascript" type="text/javascript" src="js/lib/jquery-2.1.1.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/lib/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.canvaswrapper.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.colorhelpers.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.saturated.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.browser.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.drawSeries.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.uiConstants.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.axislabels.js"></script>
+	
+	<script language="javascript" type="text/javascript" src="js/lib/jquery-ui-touch-punch/jquery.ui.touch-punch.js"></script>
+
+	<script language="javascript" type="text/javascript" src="js/lib/PapaParse-5.0.2/papaparse.js"></script>
+	
+	<script language="javascript" type="text/javascript" src="js/utils.js"></script>
+	
+	
+    <script type="text/javascript">
+
+    $(function() {
+
+
+	// Load from CSV
+	Papa.parse("resources/corr_p05.csv", {
+									header: true,
+									dynamicTyping: true,
+									download: true,
+									complete: function( results ) {
+										console.log("All done!");
+										console.log("Read ", results.data.length, " records.");
+
+										var keys = Object.keys(results.data[0]);
+										plot_values = [];
+										for (i = 0; i < results.data.length; i++){
+											item = results.data[i];
+											if (!isNaN(item[keys[0]]) && !isNaN(item[keys[1]])){
+												plot_values.push([item[keys[0]], item[keys[1]]]);
+												}
+											}
+
+										populate_graph( keys, plot_values );
+										
+									}
+									
+									});
+	
+
+	function populate_graph( keys, values ){
+		var data = [{ data: values, label: keys, color: "#333" }];
+		
+		
+		min_y = 100000; max_y = -100000;
+		min_x = 100000; max_x = -100000;
+		y_m = 0; x_m = 0;
+		for (i = 0; i < values.length; i++){
+			min_x = Math.min(values[i][0], min_x);
+			max_x = Math.max(values[i][0], max_x);
+			min_y = Math.min(values[i][1], min_y);
+			max_y = Math.max(values[i][1], max_y);
+			x_m += values[i][0];
+			y_m += values[i][1];
+			}
+
+		x_m /= values.length;
+		y_m /= values.length;
+// 		console.log(min_x, max_x);
+		range_x = max_x - min_x;
+		range_y = max_y - min_y;
+		mid_y = min_y + range_y / 2;
+
+		// Get least squares parameters beta0, beta1
+		betas = get_ols_coefficients( values );
+// 		console.log("beta0:", betas[0], "beta1", betas[1]);
+		
+		// Draw line of fit
+		px1 = min_x - range_x*0.1;
+		px2 = max_x + range_x*0.1;
+		var values2 = [[px1, betas[0] + betas[1]*px1],
+				       [px2, betas[0] + betas[1]*px2]];
+				   
+		// Get residuals
+		var resids = get_residuals( values, betas );
+		
+		
+		var data = [
+				{ data: resids["lines"], 
+				  label: "Resids", 
+				  color: "#0eb30b", 
+				  points: { show: false },
+				  lines: { show: true } 
+				},
+				{ data: values, 
+				  label: keys, 
+				  color: "#333", 
+				  points: { show: true },
+				  lines: { show: false } 
+				},
+				{ data: values2, 
+				  label: "OLS", 
+				  color: "#d12b2b", 
+				  points: { show: false },
+				  lines: { show: true, lineWidth: 2 } 
+				  }
+				];
+				
+		var options = {
+			xaxes: [{ show: true,
+					  position: 'bottom',
+					  axisLabel: 'Variable X', 
+					  min: px1, 
+					  max: px2, 
+					  autoScale: 'none' }],
+			yaxes: [{ show: true, 
+					  position: 'left',
+					  axisLabel: 'Variable Y', 
+					  min: min_y - range_y*0.1, 
+					  max: max_y + range_y*0.1, 
+					  autoScale: 'none' }],
+		};
+		
+		// Set up top graph: Regression points+line
+		var placeholder = $("#placeholder");
+		plot = $.plot(placeholder, data, options);
+
+		// Add line equation
+		var eqn = "Y = " + betas[0].toFixed(0) + " + " + betas[1].toFixed(2) + "X";
+		placeholder.append("<div id='plot_equation'>" + eqn + "</div>");
+		eqn = "MSE = " + resids["MSy"].toFixed(0);
+		placeholder.append("<div id='plot_ss'>" + eqn + "</div>");
+		
+		// Set up bottom graph: MS_y v. beta1
+		var data2 = [
+			{ data: [[betas[1], resids["MSy"]]],
+			  label: "MSy",
+			  color: "#d12b2b",
+			  points: {show: true, radius: 2},
+			  lines: {show: false, lineWidth: 2},
+			  xaxis: 1, 
+			  yaxis: 1
+			},
+			{ data: [[betas[1], resids["MSy"]]],
+			  label: "MSy_current",
+			  color: "#0eb30b",
+			  points: {show: true, radius: 6, fillColor: "#0eb30b"},
+			  lines: {show: false},
+			  xaxis: 1, 
+			  yaxis: 1
+			
+			}
+			];
+			
+		//console.log(betas[1], resids["MSy"]);
+		
+		var options2 = {
+			xaxes: [{ position: 'bottom', 
+					  axisLabel: 'Slope (β1)', 
+					  show: true, 
+					  min: 0, 
+					  max: 1.31, 
+					  autoScale: 'none'  }],
+			yaxes: [{ position: 'left', 
+					  axisLabel: 'Mean Squared Error',
+					  show: true, 
+					  min: 2000, 
+					  max: 4000, 
+					  autoScale: 'none' }],
+		};
+		
+		var placeholder2 = $("#placeholder2");
+		plot2 = $.plot(placeholder2, data2, options2);
+		
+		}
+		
+	// Gets the ordinary least squares coefficients for X,Y values
+	function get_ols_coefficients( values ) {
+		
+		var x = []; var y = [];
+		var x_m = 0; var y_m = 0;
+		var N = values.length;
+		
+		for (i = 0; i < values.length; i++){
+			x.push(values[i][0]);
+			y.push(values[i][1]);
+			x_m += values[i][0];
+			y_m += values[i][1];
+			if (isNaN(values[i][1])){
+				console.log("Index", i, "is NaN.");
+				}
+			}
+			
+		x_m /= N;
+		y_m /= N;
+		
+		console.log("xm:", x_m, "ym:", y_m);
+			
+		// Get SS_xx, SS_xy
+		var SS_xx = 0;
+		var SS_yy = 0;
+		var SS_xy = 0;
+		for (i = 0; i < x.length; i++){
+			SS_xx += x[i] * x[i];
+			SS_xy += x[i] * y[i];
+			SS_yy += y[i] * y[i];
+			}
+		
+		SS_xx -= N * x_m * x_m;
+		SS_xy -= N * x_m * y_m;
+		SS_yy -= N * y_m * y_m;
+// 		console.log("SSxx:", SS_xx, "SSxy:", SS_xy);
+		
+		// Compute coefficients
+		var beta1 = SS_xy / SS_xx;
+		var beta0 = y_m - beta1 * x_m;
+		
+		return [beta0,beta1,SS_yy/(N-2)];
+	
+		}
+		
+	});
+	
+	// Gets residual errors for values, given the model
+	// specified by betas 
+	function get_residuals( values, betas ){
+	
+		var errors = [];
+		var sq_errors = [];
+		var lines = [];
+		var MS_y = 0;
+		for (i=0; i < values.length; i++){
+			var x = values[i][0];
+			var y = values[i][1];
+			var yp = betas[0] + betas[1] * x;
+			var dy = y - yp;
+			errors.push(yp);
+			sq_errors.push(dy*dy);
+			MS_y += dy*dy;
+			lines.push([x,y]);
+			lines.push([x,yp]);
+			lines.push(null);
+			}
+	
+		MS_y /= (values.length);
+	
+		var resids = {"errors": errors, "sq_errors": sq_errors, "lines": lines, "MSy": MS_y};
+		return resids;
+	
+	}
+	
+	$( function() {
+		$( "#slider-scale" ).slider({
+		  orientation: "vertical",
+		  range: "min",
+		  min: 0,
+		  max: 100,
+		  value: 50,
+		  slide: function( event, ui ) {
+	
+			// Change slope of line
+			// 50 is best fit
+			var b = [0,0];
+			b[1] = betas[1] * ui.value / 50;
+			b[0] = y_m - b[1] * x_m;
+			var ols_line = [[px1,b[0] + b[1]*px1],
+				   		    [px2,b[0] + b[1]*px2]];
+			var resids = get_residuals( plot_values, b );
+			
+			var plot_data = plot.getData();
+			for (var i = 0; i < plot_data.length; i++) {
+				if (plot_data[i].label == "OLS"){
+					plot_data[i].data = ols_line;
+				} else if (plot_data[i].label == "Resids"){
+					plot_data[i].data = resids["lines"];
+					}
+				}
+				
+			var eqn = "Y = " + b[0].toFixed(0) + " + " + b[1].toFixed(2) + "X";
+			$("#plot_equation").text(eqn);
+			eqn = "MS<sub>Y</sub> = " + resids["MSy"].toFixed(0);
+			$("#plot_ss").html(eqn);
+				
+			plot.setData(plot_data);
+			plot.setupGrid();
+			plot.draw();
+			
+			// Update MSy plot
+			plot_data = plot2.getData();
+			var vals = []; is_found = false; bvals = [];
+			for (var i = 0; i < plot_data.length; i++) {
+				if (plot_data[i].label == "MSy"){
+					vals = plot_data[i].data;
+					for (j = 0; j < vals.length; j++){
+						if (Math.abs(vals[j]-b[1])<0.0001){
+							is_found = true;
+							}
+						}
+				} else if (plot_data[i].label == "MSy_current"){
+					plot_data[i].data = [[b[1], resids["MSy"]]]
+					}
+				
+				}
+				
+			if (!is_found){
+				vals.push([b[1],resids["MSy"]]);
+				}
+
+			plot2.setData(plot_data);
+			plot2.setupGrid();
+			plot2.draw();
+			
+		  }
+		});
+	  } );
+	  
+
+    </script>
+</head>
+<body>
+
+    <div id="content">
+    
+    	<div class="demo-slider" style="float:left;">
+    		<p>Slope (β<sub>1</sub>):</p>
+    		<div id="slider-scale"></div>
+    	</div>
+
+    	<div id="plot_left" class="demo-container">
+    		<div id="placeholder" class="demo-placeholder"></div>
+    	</div>
+    	
+    	<div id="plot_right" class="demo-container">
+    		<div id="placeholder2" class="demo-placeholder"></div>
+    	</div>
+
+    </div>
+
+
+</body>
+</html>

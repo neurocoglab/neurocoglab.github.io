@@ -40,8 +40,8 @@ let image_plot, image_url, cmap;
                                     dynamicTyping: true,
                                     download: true,
                                     complete: function( results ) {
-            console.log("All done!");
-            console.log("Read ", results.data.length, " records.");
+            //console.log("All done!");
+            //console.log("Read ", results.data.length, " records.");
 
             //console.log(results);
         
@@ -569,7 +569,7 @@ function draw_current_mse() {
     var ctx = image_plot.getCanvas().getContext("2d");
 //     ctx.strokeStyle = '#000000';
 
-    console.log(betas);
+    //console.log(betas);
     
 
     ctx.moveTo(betas[1]-scale/2, betas[2]);
