@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8"/>
+  <title>Multiple Linear Regression - Interactive Example</title>
+  
+  <!--- Load fonts --->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400&display=swap" rel="stylesheet"> 
+ 
+  
+  <!--- Load scripts --->
+<!--   <script src="js/lib/three.js"></script> -->
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-2.1.1.min.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-ui-touch-punch/jquery.ui.touch-punch.js"></script>
+
+  <script type="module" src="js/line-2d.js"></script>
+  	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.canvaswrapper.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.colorhelpers.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.saturated.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.browser.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.drawSeries.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.uiConstants.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.axislabels.js"></script>
+	
+  <!--- Load stylesheets --->
+  
+  <link href="js/lib/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="css/line-2d.css">
+  
+   
+  </head>
+  
+  <body>
+  
+        <div id="top-container">
+            <div id="sliders" class="demo-slider" style="float:left;">
+                <div>a:<div id="slider-scale-a"></div></div>
+                <div>b:<div id="slider-scale-b"></div></div>
+            </div>
+
+            <div id="plot" class="demo-container">
+                <div id="placeholder" class="demo-placeholder"></div>
+            </div>
+    	</div>
+
+  
+  </body>
+  
+</html>
