@@ -51,7 +51,8 @@ function init() {
 	plot = $.plot(placeholder, data, options);
 	
 	// Add line equation
-    var eqn = "y = " + a.toFixed(1) + "x + " + b.toFixed(1);
+    var eqn = 'y = <span class="slider_a">' + a.toFixed(1) + '</span>x + ' + 
+              '<span class="slider_b">' + b.toFixed(1) + '</span>';
     placeholder.append("<div id='plot_equation'>" + eqn + "</div>");
     
 }
@@ -108,8 +109,11 @@ function update_line() {
             }
         }
     
-    var eqn = "y = " + a.toFixed(1) + "x" + (b < 0 ? ' - ' : ' + ') + Math.abs(b).toFixed(1);
-    $("#plot_equation").text(eqn);
+    var eqn = 'y = <span class="slider_a">' + a.toFixed(1) + '</span>x' + 
+              (b < 0 ? ' - ' : ' + ') +
+              '<span class="slider_b">' + Math.abs(b).toFixed(1) + '</span>';
+    //var eqn = "y = " + a.toFixed(1) + "x" + (b < 0 ? ' - ' : ' + ') + Math.abs(b).toFixed(1);
+    $("#plot_equation").html(eqn);
     
     plot.setData(plot_data);
     plot.setupGrid();
