@@ -98,7 +98,7 @@ export function get_residuals( vertices, plane ) {
         if (plane.intersectLine(test, pt_int) != null) {
             resids.push(pt1, pt_int);
             mean_squared_error += pt1.distanceToSquared(pt_int);
-            //mean_squared_total_error += pt1.z*pt1.z;
+            mean_squared_total_error += pt1.z*pt1.z;
             mean_squared_model_error += pt_int.z*pt_int.z;
         }else {
             pt2.set(vertices[i], vertices[i+1], vertices[i+2]);
@@ -107,22 +107,17 @@ export function get_residuals( vertices, plane ) {
             if (plane.intersectLine(test, pt_int) != null) {
                 resids.push(pt1, pt_int);
                 mean_squared_error += pt1.distanceToSquared(pt_int);
-                //mean_squared_total_error += pt1.z*pt1.z;
+                mean_squared_total_error += pt1.z*pt1.z;
                 mean_squared_model_error += pt_int.z*pt_int.z;
                 }
             }
         }
         
-    mean_squared_total_error = mean_squared_error + mean_squared_model_error;
     mean_squared_error /= resids.length;
     mean_squared_model_error /= resids.length;
     mean_squared_total_error /= resids.length;
-    
-//     var r_squared = 1 - (mean_squared_error / mean_squared_model_error);
-    // Better definition
-    var r_squared = mean_squared_model_error / mean_squared_total_error;
-    //console.log(mean_squared_error, mean_squared_model_error, mean_squared_total_error);
-     
+    var r_squared = 1 - (mean_squared_error / mean_squared_total_error);
+
     return [resids, mean_squared_error, r_squared];
 
 }

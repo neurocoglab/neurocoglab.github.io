@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8"/>
+  <title>Multiple Linear Regression - Interactive Example</title>
+  
+  <!--- Load fonts --->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400&display=swap" rel="stylesheet"> 
+ 
+  
+  <!--- Load scripts --->
+<!--   <script src="js/lib/three.js"></script> -->
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-2.1.1.min.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/jquery-ui-touch-punch/jquery.ui.touch-punch.js"></script>
+
+  <script language="javascript" type="text/javascript" src="js/lib/PapaParse-5.0.2/papaparse.js"></script>
+  <script type="module" src="js/utils-3d.js"></script>
+  <script type="module" src="js/plane-test-collinear.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.canvaswrapper.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.colorhelpers.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.saturated.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.browser.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.drawSeries.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.uiConstants.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.axislabels.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.resize.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.image.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.crosshair.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.hover.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.navigate.js"></script>
+	<script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.touchNavigate.js"></script>
+  <script language="javascript" type="text/javascript" src="js/lib/flot/source/jquery.flot.touch.js"></script>
+  
+  <!--- Load stylesheets --->
+  
+  <link href="js/lib/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="css/plane-test.css">
+  
+   
+  </head>
+  
+  <body>
+  
+<!--     <p>Use the arrow keys to change the betas<p> -->
+    <p>Drag the mouse to spin the view, scroll it to zoom in/out, click-drag to pan<p>
+  
+    <div class="grid-container">
+        <div id="controls">
+            <div class="slider-container">
+                <div class="slider-label">β<sub>1</sub></div>
+                <div class="slider-obj" id="slider_beta1"></div>
+            </div>
+            <div class="slider-container">
+                <div class="slider-label">β<sub>2</sub></div>
+                <div class="slider-obj" id="slider_beta2"></div>
+            </div>
+            <div class="slider-container">
+                <button class="button-obj" id="button_view_X1">X<sub>1</sub></button>
+                <button class="button-obj" id="button_view_X2">X<sub>2</sub></button>
+                <button class="button-obj" id="button_view_top">Top</button>
+            </div>
+            
+            <div id="plot_image">
+                <div id="placeholder-cbar" class="demo-container""></div>
+                <div id="placeholder-img" class="demo-container""></div>
+    	    </div>
+            
+        </div>
+        
+        
+        <div class="renderer-container"> 
+            <div class="info-bar">
+                <div id="info-equation"></div>
+                <div id="info-mse"></div>
+                <div id="info-rsquared"></div>
+            </div>
+            <div id="renderer"> </div>
+        </div>
+        
+    </div>
+    
+<!--     <div class="label label-plane" id="label-xy">X<sub>1</sub>-Y</div> -->
+  
+  
+  </body>
+  
+</html>
